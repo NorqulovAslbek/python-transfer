@@ -1,0 +1,37 @@
+# Python __pycache__ va kompilyatsiyalangan fayllar
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Django DB va secret fayllar
+db.sqlite3
+*.sqlite3
+.env
+*.env
+
+# Virtual environment
+venv/
+ENV/
+env/
+.venv/
+
+# IDE fayllari (PyCharm, VSCode va boshqalar)
+.idea/
+.vscode/
+
+# OS fayllari
+.DS_Store
+Thumbs.db
+
+# Log va cache fayllar
+*.log
+*.pot
+*.mo
+*.pyc
+*.pyo
+*.pyd
+*.bak
+
+# Migrations (agar versiyaga qo‘shmoqchi bo‘lmasangiz)
+**/migrations/
+!**/migrations/__init__.py

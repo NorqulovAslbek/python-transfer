@@ -1,0 +1,13 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+  <h1>Tanlangan Kartalar</h1>
+  <ul>
+    {% for card in cards %}
+      <li>Card ID: {{ card.id }}, Number: {{ card.card_number }}, Status: {{ card.status }}, Balance: {{ card.balance }}</li>
+    {% empty %}
+      <li>Hech qanday karta tanlanmadi.</li>
+    {% endfor %}
+  </ul>
+{#  <a href="{% url 'admin:excell_card_changelist' %}">Orqaga</a>#}
+{% endblock %}

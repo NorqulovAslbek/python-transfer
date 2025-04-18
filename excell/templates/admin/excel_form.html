@@ -1,0 +1,9 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+    <h2>Excel faylni yuklash</h2>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Yuklash</button>
+    </form>
+{% endblock %}
