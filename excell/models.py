@@ -13,3 +13,11 @@ class Card(models.Model):
 
     def __str__(self):
         return f"{self.card_number}"
+
+    def card_result(self):
+        return {
+            "card_number": f"{self.card_number[:4]}****{self.card_number[-4:]}",
+            "expire": self.expire,
+            "balance": float(self.balance),
+            "status": self.status
+        }

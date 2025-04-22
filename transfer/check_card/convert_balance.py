@@ -2,6 +2,8 @@ import requests
 
 
 def valyuta(amount, currency_code):
+    if currency_code == 860:
+        return amount
     valyuta_list = requests.get("https://cbu.uz/oz/arkhiv-kursov-valyut/json/").json()
     valyuta_obj = next((v for v in valyuta_list if v['Code'] == str(currency_code)), None)
 
@@ -10,8 +12,4 @@ def valyuta(amount, currency_code):
 
     rate = float(valyuta_obj['Rate'])
     converted = amount / rate
-    return {
-        "currency": valyuta_obj['Ccy'],
-        "rate": rate,
-        "converted_amount": round(converted, 2)
-    }
+    return converted

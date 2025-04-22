@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/5.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
-
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -19,18 +19,37 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-!4p4_ykrpj-c1fj6^ac(&a!1&d#ye8a&h2w%v24swv**9#n&)f'
-
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-!4p4_ykrpj-c1fj6^ac(&a!1&d#ye8a&h2w%v24swv**9#n&)f')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '04e7-90-156-198-203.ngrok-free.app']
-CSRF_TRUSTED_ORIGINS = ['https://04e7-90-156-198-203.ngrok-free.app']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '73d9-90-156-198-203.ngrok-free.app']
+CSRF_TRUSTED_ORIGINS = ['https://73d9-90-156-198-203.ngrok-free.app']
 
 # Application definition
+#
+# CELERY_BROKER_URL = "redis://localhost:6379/0"
+# CELERY_RESULT_BACKEND = "redis://localhost:6379/0"
+
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+CELERY_BROKER_URL = 'redis://super_redis:6379/0'
+CELERY_RESULT_BACKEND = 'django-db'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_BEAT_SCHEDULE = {
+
+}
+CELERY_TIMEZONE = 'UTC'
+
+# Telegram sozlamalari
+TELEGRAM_TOKEN = os.getenv('6608269679:AAGM8vtudTooiUKpvQVyvlnCOAjV5vdFbBE')
+TELEGRAM_CHAT_ID = os.getenv('6656413541')
 
 INSTALLED_APPS = [
-    'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -39,8 +58,73 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'src',
     'excell',
-    'transfer'
+    'transfer',
+    'utils',
+    'django_redis',
+    'django_celery_beat',
+    'logger',
+    'django_celery_results'
+
 ]
+
+# Celery settings
+
+# # Celery Configuration Options
+# CELERY_TIMEZONE = "Australia/Tasmania"
+# CELERY_TASK_TRACK_STARTED = True
+# CELERY_TASK_TIME_LIMIT = 60
+#
+# # CELERY_BROKER_URL = 'redis://redis:6379/0'
+# # CELERY_RESULT_BACKEND = 'redis://redis:6379/0'
+# CELERY_ACCEPT_CONTENT = ['json']
+# CELERY_TASK_SERIALIZER = 'json'
+# CELERY_RESULT_SERIALIZER = 'json'
+# CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
+
+# Logging configuration
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'custom': {
+            '()': 'logger.logger.CustomFormatter',  # Reference the custom formatter
+            'fmt': '%(asctime)s [%(levelname)s] IP:%(ip)s %(message)s',
+        },
+        'django': {
+            'format': '%(asctime)s [%(levelname)s] %(message)s',
+        },
+    },
+    'handlers': {
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': 'logger/app.log',
+            'formatter': 'custom',
+        },
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'django',
+        },
+    },
+    'loggers': {
+        'custom': {
+            'handlers': ['file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        '': {
+            'handlers': ['console'],
+            'level': 'WARNING',
+            'propagate': False,
+        },
+    },
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -72,7 +156,9 @@ TEMPLATES = [
 WSGI_APPLICATION = 'src.wsgi.application'
 
 # Database
-# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
+# https://docs.djangoproject.com/en/5.2/ref/settings/#database
+# pick which cache from the CACHES setting.
+CELERY_CACHE_BACKEND = 'default'
 
 DATABASES = {
     'default': {

@@ -25,9 +25,9 @@ def send_sms(balance, number):
 
     if number != "None":
         message = f"{number} egasi sizning hisobingizda {balance} qoldi."
-        print(f"???????????????????????????????   {number.replace("+", "")}")
+        number = number.replace("+", "")
         data = {
-            "mobile_phone": f"{number.replace("+", "")}",
+            "mobile_phone": f"{number}",
             "message": "Bu Eskiz dan test",
             "from": 4546,
             "callback_url": "http://0000.uz/test.php"

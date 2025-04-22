@@ -17,9 +17,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path,include
 
-from transfer.views import jsonrpc
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('',jsonrpc)
+    path('',include('transfer.urls'))
 ]
