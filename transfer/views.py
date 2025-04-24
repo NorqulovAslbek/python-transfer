@@ -1,6 +1,7 @@
 from datetime import timezone, datetime
 
 import bcrypt
+from django.core.cache import cache
 from django.http import HttpResponse
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
@@ -8,13 +9,12 @@ from jsonrpcserver import Error, Success, dispatch, method
 from jsonrpcserver.result import Result
 
 from excell.models import Card
+from logger.logger import log_request_response
 from transfer.check_card.check import is_card_expired
 from transfer.check_card.convert_balance import valyuta
+from transfer.check_card.create_otp import otp_code
 from transfer.check_card.send_otp_telegram import send_otp_telegram
 from transfer.models import Transfer, TransferState
-from transfer.check_card.create_otp import otp_code
-from logger.logger import log_request_response
-from django.core.cache import cache
 
 
 @method(name='card.info')
@@ -97,7 +97,7 @@ def transfer_create(context,
 
 @method(name="confirm_transfer")
 @log_request_response
-def confirm_transfer(ext_id, otp) -> Result:
+def confirm_transfer(context, ext_id, otp) -> Result:
     try:
         transfer = Transfer.objects.get(ext_id=ext_id)
     except Transfer.DoesNotExist:
@@ -129,7 +129,7 @@ def confirm_transfer(ext_id, otp) -> Result:
 
 @method(name="transfer_cancel")
 @log_request_response
-def transfer_cancel(ext_id) -> Result:
+def transfer_cancel(context, ext_id) -> Result:
     try:
         transfer = Transfer.objects.get(ext_id=ext_id)
     except Transfer.DoesNotExist:
@@ -157,7 +157,7 @@ def transfer_cancel(ext_id) -> Result:
 
 
 @method(name="transfer_state")
-def transfer_state(ext_id):
+def transfer_state(context, ext_id):
     try:
         transfer = Transfer.objects.get(ext_id=ext_id)
         return Success({"message": transfer.state})
@@ -166,7 +166,7 @@ def transfer_state(ext_id):
 
 
 @method(name="transfer_filter")
-def transfer_filter(card_number, start_date=None, end_date=None, status=None):
+def transfer_filter(context, card_number, start_date=None, end_date=None, status=None):
     filter_by_fields = {
         "sender_card_number": card_number
     }

@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 import os
 from pathlib import Path
 
+from celery.schedules import crontab
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -26,22 +28,20 @@ DEBUG = True
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '73d9-90-156-198-203.ngrok-free.app']
 CSRF_TRUSTED_ORIGINS = ['https://73d9-90-156-198-203.ngrok-free.app']
 
-# Application definition
-#
-# CELERY_BROKER_URL = "redis://localhost:6379/0"
-# CELERY_RESULT_BACKEND = "redis://localhost:6379/0"
-
 import os
 from dotenv import load_dotenv
 
 load_dotenv()
 
-CELERY_BROKER_URL = 'redis://super_redis:6379/0'
+CELERY_BROKER_URL = 'redis://redis:6379/0'
 CELERY_RESULT_BACKEND = 'django-db'
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_BEAT_SCHEDULE = {
-
+    'send-daily-report': {
+        'task': 'notif_worker.tasks.send_daily_report',  # To‘g‘ri yo‘l
+        'schedule': 60.0,  # crontab(minute="*")
+    },
 }
 CELERY_TIMEZONE = 'UTC'
 
@@ -59,27 +59,18 @@ INSTALLED_APPS = [
     'src',
     'excell',
     'transfer',
-    'utils',
+    'notif_worker',
     'django_redis',
     'django_celery_beat',
     'logger',
     'django_celery_results'
-
 ]
 
-# Celery settings
-
-# # Celery Configuration Options
-# CELERY_TIMEZONE = "Australia/Tasmania"
-# CELERY_TASK_TRACK_STARTED = True
+# Celery Configuration Options
+CELERY_TASK_TRACK_STARTED = True
 # CELERY_TASK_TIME_LIMIT = 60
-#
-# # CELERY_BROKER_URL = 'redis://redis:6379/0'
-# # CELERY_RESULT_BACKEND = 'redis://redis:6379/0'
-# CELERY_ACCEPT_CONTENT = ['json']
-# CELERY_TASK_SERIALIZER = 'json'
-# CELERY_RESULT_SERIALIZER = 'json'
-# CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 
 # Logging configuration
 LOGGING = {

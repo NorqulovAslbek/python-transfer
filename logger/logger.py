@@ -1,6 +1,7 @@
 import functools
 import logging
 import time
+from jsonrpcserver import Error
 
 
 class CustomFormatter(logging.Formatter):
@@ -14,17 +15,8 @@ class CustomFormatter(logging.Formatter):
 
 logging.basicConfig(
     level=logging.INFO,
-    handlers=[
-        logging.FileHandler('app.log'),
-    ]
 )
-
 logger = logging.getLogger('custom')
-handler = logging.FileHandler('app.log')
-handler.setFormatter(CustomFormatter(
-    fmt='%(asctime)s [%(levelname)s] IP:%(ip)s ext_id:%(ext_id)s %(message)s'
-))
-logger.handlers = [handler]
 
 
 def log_request_response(func):
@@ -56,15 +48,12 @@ def log_request_response(func):
         try:
             response = func(*args, **kwargs)
             processing_time = time.time() - start_time
-
-            # Response formatlash
             if hasattr(response, 'result'):
                 response_str = str(response.result)
             elif hasattr(response, 'message') and hasattr(response, 'code'):
                 response_str = f"Xato: {response.message} (code: {response.code})"
             else:
                 response_str = str(response)
-
             logger.info(
                 f"Method: {func.__name__}, Request: {kwargs}, "
                 f"Response: {response_str}, Time: {processing_time:.3f}s",
@@ -77,6 +66,6 @@ def log_request_response(func):
                 f"Method: {func.__name__}, Error: {str(e)}, Time: {processing_time:.3f}s",
                 extra={'ip': ip_address, 'ext_id': ext_id}
             )
-            raise
+            return func(*args, **kwargs)
 
     return wrapper
