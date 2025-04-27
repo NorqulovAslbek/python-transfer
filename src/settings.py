@@ -60,8 +60,19 @@ INSTALLED_APPS = [
     'django_celery_beat',
     'logger',
     'django_celery_results',
-    'corsheaders'  # cors ni oldini olish uchun
+    'corsheaders',  # cors ni oldini olish uchun
 ]
+
+# settings.py
+
+# CACHES = {
+#     'default': {
+#         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+#         'LOCATION': '',  # Bu bo'sh qoldirilishi mumkin
+#     }
+# }
+#
+# RATELIMIT_CACHE = 'default'  # 'default' CACHES-da berilgan kesh
 
 # Celery Configuration Options
 CELERY_TASK_TRACK_STARTED = True

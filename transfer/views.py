@@ -9,16 +9,16 @@ from jsonrpcserver import Error, Success, dispatch, method
 from jsonrpcserver.result import Result
 
 from excell.models import Card
-from logger.logger import log_request_response
 from transfer.check_card.check import is_card_expired
 from transfer.check_card.convert_balance import valyuta, convert_rub_to_uzs
 from transfer.check_card.create_otp import otp_code
+from transfer.check_card.fernet import encrypt_card, decrypt_card
 from transfer.check_card.send_otp_telegram import send_otp_telegram
 from transfer.models import Transfer, TransferState
 
 
 @method(name='card.info')
-@log_request_response
+# @log_request_response
 def card_info(context, card_number, expire):
     """
     ------------------------------------------------------------------------------------
@@ -48,7 +48,7 @@ def card_info(context, card_number, expire):
 
 
 @method(name="transfer_create")
-@log_request_response
+# @log_request_response
 def transfer_create(context,
                     ext_id,
                     sender_card_number,
@@ -111,10 +111,10 @@ def transfer_create(context,
     code = bcrypt.hashpw(str(otp).encode(), bcrypt.gensalt()).decode()
     transfer = Transfer.objects.create(
         ext_id=ext_id,
-        sender_card_number=sender_card_number,
+        sender_card_number=encrypt_card(sender_card_number),
         sender_card_expiry=sender_card_expiry,
         sender_phone=sender_phone,
-        receiver_card_number=receiver_card_number,
+        receiver_card_number=encrypt_card(receiver_card_number),
         receiver_phone=receiver_phone,
         sending_amount=sending_amount,
         currency=currency,
@@ -127,7 +127,7 @@ def transfer_create(context,
 
 
 @method(name="confirm_transfer")
-@log_request_response
+# @log_request_response
 def confirm_transfer(context, ext_id, otp) -> Result:
     """
     ------------------------------------------------------------------------------------
@@ -155,8 +155,8 @@ def confirm_transfer(context, ext_id, otp) -> Result:
     if transfer.state != TransferState.CREATED:
         return Error(message="Transfer is in an invalid state!", code=400)
     else:
-        sender_card = Card.objects.get(card_number=transfer.sender_card_number)
-        receiver_card = Card.objects.get(card_number=transfer.receiver_card_number)
+        sender_card = Card.objects.get(card_number=decrypt_card(transfer.sender_card_number))
+        receiver_card = Card.objects.get(card_number=decrypt_card(transfer.receiver_card_number))
         sender_card.balance -= transfer.sending_amount
         sender_card.save(update_fields=['balance'])
         receiver_card.balance += transfer.receiving_amount
@@ -168,7 +168,7 @@ def confirm_transfer(context, ext_id, otp) -> Result:
 
 
 @method(name="transfer_cancel")
-@log_request_response
+# @log_request_response
 def transfer_cancel(context, ext_id) -> Result:
     """
     ------------------------------------------------------------------------------------
