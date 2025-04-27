@@ -13,41 +13,36 @@ import os
 from pathlib import Path
 
 from celery.schedules import crontab
+from dotenv import load_dotenv
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
-
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-!4p4_ykrpj-c1fj6^ac(&a!1&d#ye8a&h2w%v24swv**9#n&)f')
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 1)
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '73d9-90-156-198-203.ngrok-free.app']
-CSRF_TRUSTED_ORIGINS = ['https://73d9-90-156-198-203.ngrok-free.app']
-
-import os
-from dotenv import load_dotenv
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').replace(" ", "").split(',')
+# Faqat ishonchli domenlarga ruxsat berish
+CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED', '').replace(" ", "").split(',')
 
 load_dotenv()
 
-CELERY_BROKER_URL = 'redis://redis:6379/0'
-CELERY_RESULT_BACKEND = 'django-db'
+CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL_ENV')
+CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND_ENV")
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_BEAT_SCHEDULE = {
     'send-daily-report': {
-        'task': 'notif_worker.tasks.send_daily_report',  # To‘g‘ri yo‘l
-        'schedule': 60.0,  # crontab(minute="*")
+        'task': 'notif_worker.tasks.send_daily_report',
+        'schedule': 60.0,
     },
 }
 CELERY_TIMEZONE = 'UTC'
 
 # Telegram sozlamalari
-TELEGRAM_TOKEN = os.getenv('6608269679:AAGM8vtudTooiUKpvQVyvlnCOAjV5vdFbBE')
-TELEGRAM_CHAT_ID = os.getenv('6656413541')
+TELEGRAM_TOKEN = os.getenv("TG_TOKEN")
+TELEGRAM_CHAT_ID = os.getenv('CHAT_ID')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -57,18 +52,19 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'src',
+    'rest_framework',
     'excell',
     'transfer',
     'notif_worker',
     'django_redis',
     'django_celery_beat',
     'logger',
-    'django_celery_results'
+    'django_celery_results',
+    'corsheaders'  # cors ni oldini olish uchun
 ]
 
 # Celery Configuration Options
 CELERY_TASK_TRACK_STARTED = True
-# CELERY_TASK_TIME_LIMIT = 60
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 
@@ -120,11 +116,14 @@ LOGGING = {
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',  # corsni ishlatish uchun
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # Custom Middleware ip
+    'src.middleware.permission_ip.PermissionIpMiddleware'
 ]
 
 ROOT_URLCONF = 'src.urls'
@@ -147,8 +146,6 @@ TEMPLATES = [
 WSGI_APPLICATION = 'src.wsgi.application'
 
 # Database
-# https://docs.djangoproject.com/en/5.2/ref/settings/#database
-# pick which cache from the CACHES setting.
 CELERY_CACHE_BACKEND = 'default'
 
 DATABASES = {
@@ -191,6 +188,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

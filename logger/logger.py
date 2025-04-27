@@ -1,6 +1,7 @@
 import functools
 import logging
 import time
+
 from jsonrpcserver import Error
 
 
@@ -48,14 +49,36 @@ def log_request_response(func):
         try:
             response = func(*args, **kwargs)
             processing_time = time.time() - start_time
-            if hasattr(response, 'result'):
-                response_str = str(response.result)
-            elif hasattr(response, 'message') and hasattr(response, 'code'):
+            sender_card_number = kwargs.get('sender_card_number', '')
+            receiver_card_number = kwargs.get('receiver_card_number', '')
+            request = {}
+            if sender_card_number and receiver_card_number:
+                request = {
+                    "ext_id": kwargs.get('ext_id'),
+                    "sender_card_number": sender_card_number[:4] + '****' + sender_card_number[-4:],
+                    "sender_card_expiry": kwargs.get("sender_card_expiry"),
+                    "sender_phone": kwargs.get("sender_phone"),
+                    "receiver_card_number": receiver_card_number[:4] + '****' + receiver_card_number[-4:],
+                    "receiver_phone": kwargs.get("receiver_phone"),
+                    "sending_amount": kwargs.get("sending_amount"),
+                    "currency": kwargs.get("currency")
+                }
+            elif kwargs['ext_id'] and kwargs['otp']:
+                request = {
+                    "ext_id": kwargs.get('ext_id'),
+                    "otp": "******"
+                }
+            elif kwargs['ext_id']:
+                request = {
+                    "ext_id": kwargs.get('ext_id')
+                }
+
+            if hasattr(response, 'message') and hasattr(response, 'code'):
                 response_str = f"Xato: {response.message} (code: {response.code})"
             else:
                 response_str = str(response)
             logger.info(
-                f"Method: {func.__name__}, Request: {kwargs}, "
+                f"Method: {func.__name__}, Request: {request}, "
                 f"Response: {response_str}, Time: {processing_time:.3f}s",
                 extra={'ip': ip_address, 'ext_id': ext_id}
             )
@@ -66,6 +89,6 @@ def log_request_response(func):
                 f"Method: {func.__name__}, Error: {str(e)}, Time: {processing_time:.3f}s",
                 extra={'ip': ip_address, 'ext_id': ext_id}
             )
-            return func(*args, **kwargs)
+            return Error(code=500, message=f"{str(e)}")
 
     return wrapper

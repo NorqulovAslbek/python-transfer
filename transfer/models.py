@@ -34,5 +34,5 @@ class Transfer(models.Model):
     def to_result(self):
         return {
             "ext_id": self.ext_id,
-            "state": self.state
+            "state": self.get_state_display()
         }

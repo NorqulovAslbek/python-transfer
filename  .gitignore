@@ -35,3 +35,5 @@ Thumbs.db
 # Migrations (agar versiyaga qo‘shmoqchi bo‘lmasangiz)
 **/migrations/
 !**/migrations/__init__.py
+# env file
+**/.env

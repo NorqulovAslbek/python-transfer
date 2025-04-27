@@ -1,3 +1,5 @@
+import os
+
 import requests
 
 
@@ -14,7 +16,7 @@ def send_otp(message, chat_id=6656413541):
     :return:
     """
     if len(message) <= 1200:
-        token = "6608269679:AAGM8vtudTooiUKpvQVyvlnCOAjV5vdFbBE"  #
+        token = os.getenv('TG_TOKEN')  #
         message = message
 
         url = f"https://api.telegram.org/bot{token}/sendMessage"

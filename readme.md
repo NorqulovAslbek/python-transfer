@@ -63,3 +63,4 @@ Barcha so‘rovlar faqat **POST** usulida yuboriladi va yagona endpoint orqali a
 
 
 
+
